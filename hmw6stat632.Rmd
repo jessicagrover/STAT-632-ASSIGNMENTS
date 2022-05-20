@@ -1,0 +1,58 @@
+---
+title: "hmw6stat632"
+author: "Jessica Grover"
+date: "4/17/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+# Reading the data
+```{r}
+county_votes16 <- read.csv("county_votes16.csv")
+head(county_votes16)
+```
+# Problem 1. 
+# a. Fit a simple logistic regression model with trump win as the binary response variable, and obama pctvotes as the predictor. Use summary() to print the results, and write down the equation for the estimated logistic regression model. Use this logistic regression model to answer the remaining questions.
+```{r}
+model1 <- glm(trump_win ~ obama_pctvotes, data = county_votes16, family = "binomial")
+summary(model1)
+```
+# b. ke a scatter plot of the data (i.e., plot the observed zeros and ones on the y-axis and obama pctvotes on the x-axis) and superimpose the fitted logistic curve for the estimated probability of Trump winning. Use ggplot2 to make the plot.
+```{r}
+library(ggplot2)
+ggplot(county_votes16, aes(x= obama_pctvotes, y= trump_win)) +
+geom_point(alpha = 0.05) + geom_smooth(method = "glm", method.args = "binomial")
+```
+# c.  Use the logistic regression model to estimate the probability of Trump winning in a county with obama pctvotes = 40, 50, and 60.
+```{r}
+votes <- data.frame(obama_pctvotes = c(40,50,60))
+predict(model1, newdata = votes, type = "response")
+```
+The probability of trump winning is 99.49% for 40% of obama votes. Simillarly, for 50% obama votesthe probablity of Trump winning is 82.56% and for 60% obama votes the probablity of Trump winning is 10.34%.
+
+# d. Provide an interpretation of the estimated coefficient βˆ1 for obama pctvotes.
+ The estimated coefficient of Beta1Hat for obama_pctvotes denotes that an increase in about one percent of votes that were casted for Obama in the year 2012 is realated to a decrease of about 0.37149 in the lod-odd of the probablity of Trump winning in 2016 polls.
+
+------------------------------------------------------------------------------------------
+
+# Problem 2. 
+
+# a. Fit a multiple logistic regression model with trump win as the response, and the following 8 demographic variables as predictors: pct pop65, pct black, pct white, pct hispanic, pct asian, highschool, bachelors, and income. Use summary() to print the results.
+
+```{r}
+model2 <- glm(trump_win ~ pct_pop65 + pct_black + pct_white + pct_hispanic + pct_asian + highschool + bachelors+income+trump_win,data=county_votes16,family = "binomial")
+summary(model2)
+```
+
+# b. Remove any predictors that are not significant from the model fit in (a).
+```{r}
+model3 <- glm(trump_win ~ pct_black + pct_white + pct_hispanic + pct_asian + highschool + bachelors + income+trump_win,data=county_votes16,family = "binomial")
+summary(model3)
+
+```
+We are removing pct_pop65 as it is not significant.
+
+# c.  Provide an interpretation of the signs of the estimated coefficients.
+There is a positive relationship with income and percentage of white
+people vote. Negative coefficients are negatively related to the response variable.
+null deviance- residual deviance and with the number of predictors as 6 we get the value of p less than 0.05 in which we can say that the model is significant with 95 percent confidence.

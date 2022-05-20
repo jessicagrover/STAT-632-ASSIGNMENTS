@@ -1,0 +1,126 @@
+---
+title: "midterm1stat631"
+author: "Jessica Grover"
+date: "3/15/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+#Problem 1
+#a.Are the lives of these brands of batteries different?
+```{r}
+library(emmeans)
+library(lsmeans)
+```
+```{r}
+brands<-c(100,96,92,96,92,76,80,75,84,82,108,100,96,98,100)
+life<-rep(c(1,2,3),each=5)
+data1<-data.frame(brands,life)
+data1$flife<-as.factor(data1$life)
+data1
+```
+
+```{r}
+battery<-lm(brands~flife,data=data1)
+anova(battery)
+```
+
+By using Anova test, we got the p-value which is less than 0.5.
+Therefore, we reject null hypothesis. The means of the brands are different. Hence, the battery life will also be different.
+
+#B. Analyze the normality assumption and state your conclusion.
+```{r}
+plot(battery,which=2)
+
+```
+Here to check the normality we are using qqplot. 
+There is no pattern observed in qqplot. The points are not close to the qqline and hence it is not normal.
+Normality can also be checked by Shapiro-Wilk's test
+```{r}
+shapiro.test(battery$residuals)
+```
+
+Since p-value=0.2457>0.05, data supports the null hypothesis of normality.
+
+#C.Check the constant variance assumption and state your conclusion.
+```{r}
+plot(battery,which = 1)
+```
+Here we are checking constant variance assumptions by residuals vs fitted values plot.
+There are no clear patterns seen in the above plot. The sample violates the assumptions of constant variance at every fitted value.
+The levene's test can be used for homogenety of variance
+```{r}
+library(car)
+leveneTest(brands~flife,data=data1)
+```
+
+By performing Levene's test, we conclude that it is reasonable to consider constant variance as p=9.328>0.05.
+
+#D. Construct 95% simultaneous confidence interval for all pairs of means using Tukey’s method.
+```{r}
+lsmResponse<-lsmeans(battery,~flife)
+tk<-summary(contrast(lsmResponse,method="pairwise",adjust = "Tukey",infer=c(T,T),level=0.95))
+tk
+```
+Tukey's method is used to conduct pairwise mean comparison at certain significant level.Here level is 0.95. 
+Confidence Interval of brand1-brand2 is (9.14,22.46)
+Confidence Interval of brand1-brand3 is (-11.86,1.46)
+Confidence Interval of brand1-brand2 is (-27.66,-14.34)
+
+#E. From d, which brand has the shortest life?
+By considering the means of these three brands, brand 2 has the shortest life.
+
+#F.  For the brand selected in (e), the manufacturer decides to replace without charge any battery that fails in less than 80 weeks, what percentage of batteries of this brand would the company expect to replace?
+```{r}
+
+pnorm((80-79.4)/sqrt(15.6))
+```
+The company is expected to replace 56.03% of brand 2 batteries.
+
+------------------------------------------------------------------------------------------
+
+#Problem 2
+#a. 
+```{r}
+library(emmeans)
+data1<-c(97,96,92,95,83,87,78,81,85,84,78,79,64,72,63,74,52,56,44,50,48,58,49,53)
+res<-rep(c(1,2,3,4,5,6),each=4)
+level1<-data.frame(data1,res)
+level1$fres<-as.factor(level1$res)
+level1
+```
+```{r}
+power1=powerTransform(data1~fres,data = level1)
+summary(power1)
+```
+The transformation is not required as the lambda value is 1.
+#b. 
+We are rejecting null hypothesis as the value of p is significant. The treatments are independent and at least one of them is not equivalent.
+```{r}
+nit<-lm(data1~fres,data=level1)
+anova(nit)
+
+```
+
+```{r}
+lsmType<-lsmeans(nit,~fres)
+summary(contrast(lsmType,list("Nitrogen Vs Non nitrogen"=c(1,0,-1,-1,1,0))),infer = c(T,T),side="two sided")
+```
+
+#c.
+No, there is no significant quadratic effects of nitrogen under non irrigated condition. The value of p=0.3294>0.05, it is not significant at 95% of confidence level.
+
+#d.
+```{r}
+summary(contrast(lsmType,list("Irrigation effect"=c(1,-1,0,0,1,-1))),
+infer=c(T,T),side = "two-sided")
+```
+
+There is a significant effect of irrigation. The interval is positive between irrigation and non irrigation. This indicates that non irrigation is better than irrigation with 95% confidence level.
+
+#e. 
+```{r}
+tk<- summary(contrast(lsmType,method="pairwise",adjust=("Tukey"),infer=c(T,T),level = 0.95))
+tk
+```
+There is no 0 in any intervals. This indicates that the mean response of the 1st group is significantly larger than those of the other groups.There is a strong evidence that it gives us the best result of big bluestem.

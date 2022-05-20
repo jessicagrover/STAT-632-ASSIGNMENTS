@@ -1,0 +1,74 @@
+---
+title: "homework2stat632"
+author: "Jessica Grover"
+date: "2/18/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r}
+library(alr4)
+```
+```{r}
+UN11 <- read.csv("UN11.csv")
+dataset=alr4::UN11
+```
+#A. Make a scatterplot with fertility on the y-axis and ppgdp on the x-axis. Explain why we should consider log transformations for this data.
+```{r}
+plot(dataset$ppgdp, dataset$fertility,
+xlab = 'fertility' , ylab = 'ppgdp')
+
+```
+Basically,log transformation will make the data linearly distributed. Here we can see it not linearly distributed.
+
+
+#B. Make a scatterplot of log(fertility) versus log(ppgdp) and add the least squares regression line. Does the association appear to be reasonably linear?
+```{r}
+lm1 <- lm(log(fertility) ~ log(ppgdp), data=UN11)
+plot(log(fertility) ~ log(ppgdp), data=UN11)
+abline(lm1)
+```
+Yes, the association appear to be reasonably linear.
+
+#C. Use the lm() function to fit a simple linear regression model with log(fertility) as the response variable, and log(ppgdp) as the explanatory variable. Use the summary() function
+to print the results.
+```{r}
+model= lm(log(fertility)~log(ppgdp), data=UN11)
+summary(model)
+```
+
+#D. Write down the equation for the least squares line.
+```{r}
+model
+```
+The equation for least square line is 
+log(fertility) = 2.6655 + log(-0.2071)
+
+#E. Interpret the slope of the regression model.
+A decrease of 20.71% is seen in fertility rate-number of children per women due to 1% increase of ppgdp- the gross national product per person in US dollar.
+
+#F. For a locality not in the data with ppgdp = 1000, obtain a point prediction and a 95% prediction interval for log(fertility). If the interval (a, b) is a 95% prediction interval for log(fertility), then a 95% prediction interval for fertility is given by (exp(a), exp(b)). Use this results to get a 95% prediction interval for fertility.
+```{r}
+new_x<-data.frame(ppgdp=1000)
+predict1<-predict(lm1,newdata = new_x,interval = "predict", level=0.95)
+predict1
+```
+Exponentiating to express in the original scale of fertility
+```{r}
+exp(predict1)
+```
+
+
+#G. Make a plot of the standardized residuals versus fitted values, and a QQ plot of the standardized residuals. Comment on whether or not the assumptions for simple linear regression appear to be satisfied.
+
+```{r}
+par(mfrow = c(1, 2))
+plot(lm1, 1:2)
+
+```
+Here, the residual plot shows nonconstant variance. It means, the variability in the residuals tends to increase with the fitted values. The QQ plot also indicates that the residuals deviate from a normal distribution.
+
+#H. Which countries are flagged as outliers? That is, which countries have standardized residuals outside the interval from -2 to 2. In your view, does it seem necessary to remove any of these points, and then refit the model?
+
+The countries Guinea and Bosnia Herzegovina appear to be outside the interval from -2 to 2. These are the equatorial countries. It seems that there is no need to remove any of the points as n is large. Removing the points won't make any difference.

@@ -1,0 +1,70 @@
+---
+title: "hm4stat632"
+author: "Jessica Grover"
+date: "3/18/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+#a.
+```{r}
+library(MASS)
+attach(Boston)
+```
+```{r}
+Y <- matrix(medv, ncol=1)
+```
+This is response vector
+
+Let us now design a matrix
+```{r}
+X <- cbind(Intercept = 1, dis, rm, tax, chas)
+X <- as.matrix(X)
+X[1:4,]
+
+```
+
+Manually calculating mean square estimates
+```{r}
+(betaHat <- solve(t(X) %*% X) %*% t(X) %*% Y)
+
+```
+
+Comparing with lm()
+```{r}
+lmBoston <- lm(medv ~ dis + rm + tax + chas, data=Boston)
+coef(lmBoston)
+```
+
+We can conclude that results are same as the parameter estimates provided by the lm() function.
+
+#b.
+```{r}
+n <- nrow(Boston)
+p <- 4
+resid <- as.numeric(Y - X %*% betaHat)
+sigmaHat2 <- sum(resid^2) / (n-p-1)
+covBetaHat <- sigmaHat2 * solve(t(X) %*% X)
+covBetaHat
+```
+```{r}
+seBetaHat <- sqrt(diag(covBetaHat))
+seBetaHat
+```
+#Comparing with lm()
+```{r}
+summary(lmBoston)$coef
+```
+
+```{r}
+vcov(lmBoston)
+
+```
+```{r}
+summary(lmBoston)$coef[,2]
+
+```
+After checking we got that the square root of the diagonal entries of this matrix are the same as the standard errors provided by the lm() function.
+
+

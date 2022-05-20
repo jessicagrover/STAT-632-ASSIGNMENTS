@@ -1,0 +1,98 @@
+---
+title: "Hw3stat632"
+author: "Jessica Grover"
+date: "3/5/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+#Problem 1
+```{r}
+library(ISLR)
+```
+#a. Make a scatter plot with mpg on the y-axis, and horsepower on the x-axis.
+```{r}
+mpg=Auto$mpg
+horsepower=Auto$horsepower
+plot(horsepower,mpg,main="Auto Scatter Plot")
+```
+#b. Use the lm() function to estimate a second degree (quadratic) polynomial regression model. That is, fit the model Y = β0 + β1x + β2x2 + e, where Y = mpg and x = horsepower. Use the summary() function to print the results.
+
+```{r}
+equ=lm(mpg~horsepower+I(horsepower^2))
+summary(equ)
+```
+From the output, the equation for polynomial regression is:
+mpg=56.9000997-0.4661896*horsepower+0.0012305*horsepower^2
+
+#c. Use the fitted regression model to make a prediction and 95% prediction interval for the mpg of a vehicle that has horsepower = 150.
+```{r}
+newdata=data.frame(horsepower=150)
+predict(equ,newdata,interval = "prediction")
+```
+
+horsepower=150  ------ given
+then,
+mpg=56.9000997-0.4661896*150+0.0012305*150^2=14.65872
+
+The 95% prediction interval of mpg is (6.027273,23.29016)
+
+
+#d. Add the fitted second degree polynomial regression curve to the scatter plot of mpg versus horsepower. You may use either the base-R or ggplot2 approach.
+```{r}
+
+library(ggplot2)
+p <- ggplot(Auto, aes(x=horsepower,y=mpg)) + geom_point()
+p + stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1)
+```
+The scattered plot is not scattered,it does not satisfy the normality condition.This is the second degree curve for mpg vs horsepower.
+
+#e. Make a plot of the residuals versus fitted values, and a QQ plot of the standardized residuals. Comment on whether or not there are any violations of the assumptions for regression modeling.
+
+```{r}
+par=(mfrow=c(2,2))
+plot(equ)
+```
+It is clear that many points are not close to the line so the assumption is not linear.
+#Problem 2
+```{r}
+library(ISLR)
+head(Carseats)
+```
+
+#a.Fit a multiple linear regression model to predict Sales using Price, Urban, and US.
+```{r}
+library(ISLR)
+df<-Carseats
+model1<-lm(Sales~Price+Urban+US,data=df)
+summary(model1)
+
+```
+#b. Provide an interpretation of each coefficient in the model. Note that some of the variables are qualitative.
+The interpretations are as follows:
+1. The sale of the store is not affected if it is in urban area or not.
+2.When price increases by $1000 and other predictors are held constant, sales decrease by 54.459 unit sales. In otherwords, when price increases by $1000, the number of Carseats sold decrease by 54,459.
+3.The sales of a store in US is 1200 more carseats(approx) as compared to other stores abroad.
+
+#c.Write our the equation for the fitted model.
+The equation is:
+Sales=13.043469-0.054459*Price-0.021916*Urban+1.200573*US
+
+#d. For which of the predictors can you reject the null hypothesis H0 : βj = 0?
+We can reject the null hypothesis for the predictor "Urban". The p-value is not statistically significant with a value of 0.936.
+
+#e. On the basis of the your response to the previous question, fit a smaller model that only uses the predictors for which there is evidence of association with the outcome.
+```{r}
+model2=lm(Sales~Price+US,data=Carseats)
+summary(model2)
+```
+
+#f. How well do the models in (a) and (e) fit the data?
+Based on their respective R-square values, these two models are mediocre (only 24% change in response explained).
+
+#g. Using the model from (e), obtain 95% confidence intervals for the coefficients.
+```{r}
+confint(model2)
+```
+
+

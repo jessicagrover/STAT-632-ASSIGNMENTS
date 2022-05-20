@@ -1,0 +1,144 @@
+---
+title: "midterm2stat632"
+author: "Jessica Grover"
+date: "4/19/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+# Problem 1
+# a. Using BWT as the response variable and only AGE, LWT, RACE, and FTV for predictors, create a scatterplot matrix of the data and comment on the relationship among the variables.
+```{r}
+library(ggplot2)
+library(car)
+library(MASS)
+```
+
+Reading the file
+```{r}
+data1<-read.table("lowbwt.dat",header = T)
+head(data1)
+
+```
+```{r}
+lm1 <- lm(BWT~ AGE+LWT+RACE+FTV,data=data1)
+par(mfrow=c(1,2))
+plot(lm1,1:2)
+
+```
+```{r}
+par(mfrow=c(1,3))
+plot(data1$AGE,rstandard(lm1),xlab="age",ylab="standardised residuals")
+plot(data1$LWT,rstandard(lm1),xlab="LWT",ylab="standardised residuals")
+plot(data1$RACE,rstandard(lm1),xlab="RACE",ylab="standardised residuals")
+```
+```{r}
+plot(data1$FTV,rstandard(lm1),xlab="FTV",ylab="standardised residuals")
+
+```
+The above plot shows that there are some points which are not on the line. The residual vs fitted plot shows that it has constant variance.
+
+# b. Run a Box-Cox analysis of the response using the full additive model (no interactions). What transformation is suggested?
+```{r}
+boxcox(lm1,lambda=seq(-2,2,by=0.05))
+```
+```{r}
+summary(powerTransform(lm1))
+```
+It is clear that value of lambda is 1, so no transformation is required.
+
+# c. Use step-wise selection to determine the best model according to the AIC criteria. Report the model and the AIC associated with it.
+Using the step function,
+```{r}
+nullmodel <- lm(BWT~1,data=data1)
+fullmodel <- lm(BWT~ AGE+LWT+RACE+FTV,data=data1)
+step(nullmodel,scope = list(lower=nullmodel,upper=fullmodel),direction = "forward")
+```
+```{r}
+n <- length(data1$BWT)
+step(nullmodel,scope = list(lower=nullmodel,upper=fullmodel),direction = "forward",k=log(n))
+```
+```{r}
+reducedModel <- step(nullmodel,scope = list(lower=nullmodel,upper=fullmodel),direction = "forward",trace=0)
+summary(reducedModel)
+
+```
+We are using reduced model as it is much better for AIC. 
+It is seen that race and lwt are less than 0.05 so they are significant. 
+Lwt has the positive relationship with bwt. race has the negative relationship with birth which is weight in grams.
+The predictors are 6.2% of response of bwt.
+
+# d. Perform a partial F−test to see if you can simultaneously drop the variables that were dropped in part (c). Does this agree with the results of the step-wise selection?
+Using anova is partial f-test
+```{r}
+anova(reducedModel,lm1)
+
+
+```
+
+We fail to reject null hypothesis so reduced model is better than the full model.
+
+# e.  Check the usual assumptions for your final model.
+
+```{r}
+plot(reducedModel)
+
+```
+There is normal distribution. There appears to be the linear association. This satisfies the conditions of normality, constant variance and linearity.
+
+# f. If someone is not white or black, 35 years old, had 2 visits during the first trimester, and weighed 136 pounds at the last menstrual period, what is estimated birthweight of the baby, using your model?
+
+```{r}
+predict(lm1,data.frame(RACE=3,AGE=35,FTV=2,LWT=136),data=data1)
+
+```
+
+# g.  Reality check. Is your model useful? Why or why not?
+```{r}
+summary(reducedModel)
+```
+
+As the model satisfies the normality assumptions, we can say it is useful.
+
+------------------------------------------------------------------------------------
+
+# Problem 2.
+# a.  Run a logistic regression and discuss the significance of the predictor variables.
+```{r}
+lm2 <-glm(LOW~AGE+LWT+RACE+FTV,data = data1,family = "binomial")
+summary(lm2)
+```
+# b. Drop the predictors that are not significant and rerun the model. For any quantitative predictor variables, what do the sign of the estimated regression coefficients tell you about the relationship between these predictors and the probability of low birthweight?
+
+As it is seen that FTV has the p-value is greater than 0.01 and is insignificant, so we decide to remove ftv from the model.
+Rerunning the model,
+```{r}
+lm3<-glm(LOW~AGE+LWT+RACE,data = data1,family="binomial")
+summary(lm3)
+
+```
+The p-value of age is greater than 0.01 and is insignificant, so removing age from the model.
+
+```{r}
+lm4 <-glm(LOW~LWT+RACE,data = data1,family="binomial")
+summary(lm4)
+
+
+```
+
+Now, the p-value of race is 0.13 and is not significant so that is being dropped.
+```{r}
+lm4<- glm(LOW~LWT,data=data1,family="binomial")
+summary(lm4)
+```
+# c. If someone is not white or black, 35 years old, had 2 visits during the first trimester, and weighed 136 pounds at the last menstrual period, what is estimated probability that the baby has low birthweight, using your model?
+```{r}
+predict(lm2,data.frame(RACE=3,AGE=35,FTV=2,LWT=136),data=data1,type = "response")
+
+```
+
+
+# d. Does your answer to question 2 part (c) seem consistent with your answer to question 1 part (f)? Explain.
+
+From the outputs, it is consistent.

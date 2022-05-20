@@ -1,0 +1,45 @@
+---
+title: "Homework1"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r}
+library(alr4)
+data("oldfaith")
+x<-oldfaith$Duration
+y<-oldfaith$Interval
+mod<-lm(y~x,data=oldfaith)
+summary(mod)
+
+```
+```{r}
+scatterplot(x,y)
+newy<-data.frame(x=c(250))
+predict(mod,newdata = newy, interval="prediction", level=0.95)
+```
+
+```{r}
+
+playbill <- read.csv("playbill.csv")
+mod<- lm(playbill$CurrentWeek ~ playbill$LastWeek, data=playbill)
+
+```
+
+```{r}
+plot(playbill$CurrentWeek,playbill$LastWeek)
+abline(mod)
+```
+```{r}
+conflicts(mod)
+summary(mod)
+```
+```{r}
+newy<-data.frame(x=c(250))
+predict(mod,newdata = newy, interval="prediction", level=0.95)
+```
+
+
+
+
